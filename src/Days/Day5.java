@@ -13,7 +13,7 @@ import java.util.List;
 public class Day5 {
 
   public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("Day5.txt"));
+    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day5.txt"));
 
     List<Seat> entries = bufferedReader.lines().map(Seat::new).collect(toList());
 

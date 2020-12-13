@@ -10,7 +10,7 @@ import java.util.List;
 public class Day2 {
 
   public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("Day2.txt"));
+    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day2.txt"));
 
     List<PolicySet> entries = bufferedReader.lines().map(PolicySet::new).collect(toList());
 

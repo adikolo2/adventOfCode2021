@@ -24,7 +24,7 @@ public class Day3 {
   private static final AtomicInteger stepCounter = new AtomicInteger(0);
 
   public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("Day3.txt"));
+    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day3.txt"));
 
     List<TreeLine> entries = bufferedReader.lines().map(TreeLine::new).collect(Collectors.toList());
     List<Movement> movements = new LinkedList<>();

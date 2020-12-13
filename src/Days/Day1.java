@@ -15,7 +15,7 @@ import java.util.function.Function;
 public class Day1 {
 
   public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("Day1.txt"));
+    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day1.txt"));
 
     List<Integer> entries = bufferedReader.lines().map(Integer::parseInt).collect(toList());
 

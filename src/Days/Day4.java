@@ -39,7 +39,7 @@ public class Day4 {
 
 
   public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("Day4.txt"));
+    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day4.txt"));
     List<String> collect = bufferedReader.lines().collect(Collectors.toList());
     List<String> concatenated =  parsePassports(collect);
 
