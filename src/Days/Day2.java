@@ -15,7 +15,6 @@ public class Day2 {
     List<PolicySet> entries = bufferedReader.lines().map(PolicySet::new).collect(toList());
 
     System.out.println("The number of valid password is: "+ countValidPasswords(entries));
-
     bufferedReader.close();
   }
 
@@ -54,6 +53,7 @@ public class Day2 {
 
       this.letter = lineSplit[1].substring(0, 1);
       this.password = lineSplit[2];
+
     }
 
     /**
