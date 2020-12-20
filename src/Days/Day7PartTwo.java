@@ -34,15 +34,15 @@ public class Day7PartTwo {
     BagNode root = new BagNode();
     root.nodeOwner = findMasterBagAsParent(myBag);
     root.children = createChildrenTree(root.nodeOwner);
-    root.ownerMulitplier = 1;
+    root.ownerMultiplier = 1;
 
     return countChildrenSubtotal(root) - 1; // main bag doesn't count
   }
 
   private static int countChildrenSubtotal(BagNode bagNode) {
 
-    return bagNode.ownerMulitplier + bagNode.children.stream()
-        .mapToInt(childNode -> bagNode.ownerMulitplier * countChildrenSubtotal(childNode)).sum();
+    return bagNode.ownerMultiplier + bagNode.children.stream()
+        .mapToInt(childNode -> bagNode.ownerMultiplier * countChildrenSubtotal(childNode)).sum();
   }
 
   private static MasterBag findMasterBagAsParent(Bag myBag) {
@@ -62,14 +62,14 @@ public class Day7PartTwo {
   private static class BagNode {
     private MasterBag nodeOwner;
 
-    private int ownerMulitplier;
+    private int ownerMultiplier;
 
     private List<BagNode> children;
 
-    public BagNode(MasterBag nodeOwner, int ownerMulitplier, List<BagNode> children) {
+    public BagNode(MasterBag nodeOwner, int ownerMultiplier, List<BagNode> children) {
 
       this.nodeOwner = nodeOwner;
-      this.ownerMulitplier = ownerMulitplier;
+      this.ownerMultiplier = ownerMultiplier;
       this.children = children;
     }
 
