@@ -15,23 +15,24 @@ import java.util.function.Function;
 public class Day1 {
 
   public static void main(String[] args) throws IOException {
+
     BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day1.txt"));
 
     List<Integer> entries = bufferedReader.lines().map(Integer::parseInt).collect(toList());
 
-//    System.out.println("The product you are looking for is: "+ findTwoSumElements(entries));
-    System.out.println("The product you are looking for is: "+ findThreeSumElements(entries));
+    // System.out.println("The product you are looking for is: "+ findTwoSumElements(entries));
+    System.out.println("The product you are looking for is: " + findThreeSumElements(entries));
 
     bufferedReader.close();
   }
 
+  private static long findTwoSumElements(List<Integer> entries) {
 
-  public static long findTwoSumElements(List<Integer> entries) {
     int desiredSum = 2020;
     long desiredProduct = 0;
 
-    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream().collect(
-        toMap(Function.identity(), element -> desiredSum - element));
+    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream()
+        .collect(toMap(Function.identity(), element -> desiredSum - element));
 
     Optional<Integer> firstOpt = entriesAndItsSubtractions.values().stream().filter(entries::contains).findFirst();
     if (firstOpt.isPresent()) {
@@ -44,15 +45,16 @@ public class Day1 {
     return desiredProduct;
   }
 
-  public static List<Integer> findTwoSumElementsCustomSum(List<Integer> entries, int desiredSum) {
+  private static List<Integer> findTwoSumElementsCustomSum(List<Integer> entries, int desiredSum) {
+
     List<Integer> results = new ArrayList<>();
 
-    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream().distinct().collect(
-        toMap(Function.identity(), element -> desiredSum - element));
+    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream().distinct()
+        .collect(toMap(Function.identity(), element -> desiredSum - element));
 
     Optional<Integer> firstOpt = entriesAndItsSubtractions.values().stream().filter(entries::contains).findFirst();
     if (firstOpt.isPresent()) {
-       results.add(firstOpt.get());
+      results.add(firstOpt.get());
       results.add(entriesAndItsSubtractions.get(results.get(0)));
 
     }
@@ -60,12 +62,13 @@ public class Day1 {
     return results;
   }
 
+  private static long findThreeSumElements(final List<Integer> originalEntries) {
 
-  public static long findThreeSumElements(final List<Integer> originalEntries) {
     final Integer desiredSum = 2020;
     long desiredProduct = 0;
 
-    List<Integer> sumsAfterFirstSubtraction = originalEntries.stream().map(element -> desiredSum - element).collect(toList());
+    List<Integer> sumsAfterFirstSubtraction = originalEntries.stream().map(element -> desiredSum - element)
+        .collect(toList());
 
     List<List<Integer>> subSumsAndItsElementsStepOne = new ArrayList<>();
 
@@ -73,31 +76,29 @@ public class Day1 {
 
       List<Integer> twoSumElementsCustomSum = findTwoSumElementsCustomSum(originalEntries, sum);
       if (!twoSumElementsCustomSum.isEmpty()) {
-      subSumsAndItsElementsStepOne.add(twoSumElementsCustomSum);
+        subSumsAndItsElementsStepOne.add(twoSumElementsCustomSum);
       }
     });
 
-    Map<Integer, List<Integer>> subSumsAndItsElementsStepTwo = subSumsAndItsElementsStepOne.stream().collect(toMap(
-        element -> element.stream().reduce(Integer::sum).get(), Function.identity()));
+    Map<Integer, List<Integer>> subSumsAndItsElementsStepTwo = subSumsAndItsElementsStepOne.stream()
+        .collect(toMap(element -> element.stream().reduce(Integer::sum).get(), Function.identity()));
 
     List<Integer> firstTwoElements = new ArrayList<>();
 
-    Optional<Integer> thirdElementOpt = originalEntries.stream().filter(
-        element -> subSumsAndItsElementsStepTwo.keySet().stream().anyMatch(
-              subSum -> {
-                boolean equals = Integer.valueOf(subSum + element).equals(desiredSum);
-                if (equals) {
-                  firstTwoElements.addAll(subSumsAndItsElementsStepTwo.get(subSum));
-                }
-                return equals;
-              })).findFirst();
+    Optional<Integer> thirdElementOpt = originalEntries.stream()
+        .filter(element -> subSumsAndItsElementsStepTwo.keySet().stream().anyMatch(subSum -> {
+          boolean equals = Integer.valueOf(subSum + element).equals(desiredSum);
+          if (equals) {
+            firstTwoElements.addAll(subSumsAndItsElementsStepTwo.get(subSum));
+          }
+          return equals;
+        })).findFirst();
     firstTwoElements.forEach(subSumsAndItsElementsStepTwo::remove);
     if (thirdElementOpt.isPresent()) {
       Integer third = thirdElementOpt.get();
       desiredProduct = firstTwoElements.get(0) * firstTwoElements.get(1) * third;
 
     }
-
 
     return desiredProduct;
   }

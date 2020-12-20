@@ -21,7 +21,7 @@ public class Day8PartTwo {
 
     List<Instruction> entries = bufferedReader.lines().map(Instruction::new).collect(toList());
 
-    System.out.println("The value of accumulator before the loop: " + bruteForceTheGame(entries)); // 1553
+    System.out.println("The value of accumulator after the brute force fix: " + bruteForceTheGame(entries)); // 1877
     bufferedReader.close();
   }
 
