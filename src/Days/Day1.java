@@ -11,95 +11,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+/**
+ * Count the number of times a depth measurement increases from the previous measurement.
+ */
 public class Day1 {
 
-  public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day1.txt"));
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day1.txt"))) {
 
-    List<Integer> entries = bufferedReader.lines().map(Integer::parseInt).collect(toList());
 
-    // System.out.println("The product you are looking for is: "+ findTwoSumElements(entries));
-    System.out.println("The product you are looking for is: " + findThreeSumElements(entries));
+            List<Integer> entries = bufferedReader.lines().map(Integer::parseInt).collect(toList());
 
-    bufferedReader.close();
-  }
-
-  private static long findTwoSumElements(List<Integer> entries) {
-
-    int desiredSum = 2020;
-    long desiredProduct = 0;
-
-    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream()
-        .collect(toMap(Function.identity(), element -> desiredSum - element));
-
-    Optional<Integer> firstOpt = entriesAndItsSubtractions.values().stream().filter(entries::contains).findFirst();
-    if (firstOpt.isPresent()) {
-      Integer first = firstOpt.get();
-      Integer second = entriesAndItsSubtractions.get(first);
-
-      desiredProduct = first * second;
-    }
-
-    return desiredProduct;
-  }
-
-  private static List<Integer> findTwoSumElementsCustomSum(List<Integer> entries, int desiredSum) {
-
-    List<Integer> results = new ArrayList<>();
-
-    Map<Integer, Integer> entriesAndItsSubtractions = entries.stream().distinct()
-        .collect(toMap(Function.identity(), element -> desiredSum - element));
-
-    Optional<Integer> firstOpt = entriesAndItsSubtractions.values().stream().filter(entries::contains).findFirst();
-    if (firstOpt.isPresent()) {
-      results.add(firstOpt.get());
-      results.add(entriesAndItsSubtractions.get(results.get(0)));
+            System.out.println("The product you are looking for is: " + countIncreasedValues(entries)); // 1195
+            System.out.println("The product you are looking for is: " + countSummedUpIncreasedValues(entries)); //1235
+        }
 
     }
 
-    return results;
-  }
+    private static long countIncreasedValues(List<Integer> entries) {
 
-  private static long findThreeSumElements(final List<Integer> originalEntries) {
-
-    final Integer desiredSum = 2020;
-    long desiredProduct = 0;
-
-    List<Integer> sumsAfterFirstSubtraction = originalEntries.stream().map(element -> desiredSum - element)
-        .collect(toList());
-
-    List<List<Integer>> subSumsAndItsElementsStepOne = new ArrayList<>();
-
-    sumsAfterFirstSubtraction.forEach(sum -> {
-
-      List<Integer> twoSumElementsCustomSum = findTwoSumElementsCustomSum(originalEntries, sum);
-      if (!twoSumElementsCustomSum.isEmpty()) {
-        subSumsAndItsElementsStepOne.add(twoSumElementsCustomSum);
-      }
-    });
-
-    Map<Integer, List<Integer>> subSumsAndItsElementsStepTwo = subSumsAndItsElementsStepOne.stream()
-        .collect(toMap(element -> element.stream().reduce(Integer::sum).get(), Function.identity()));
-
-    List<Integer> firstTwoElements = new ArrayList<>();
-
-    Optional<Integer> thirdElementOpt = originalEntries.stream()
-        .filter(element -> subSumsAndItsElementsStepTwo.keySet().stream().anyMatch(subSum -> {
-          boolean equals = Integer.valueOf(subSum + element).equals(desiredSum);
-          if (equals) {
-            firstTwoElements.addAll(subSumsAndItsElementsStepTwo.get(subSum));
-          }
-          return equals;
-        })).findFirst();
-    firstTwoElements.forEach(subSumsAndItsElementsStepTwo::remove);
-    if (thirdElementOpt.isPresent()) {
-      Integer third = thirdElementOpt.get();
-      desiredProduct = firstTwoElements.get(0) * firstTwoElements.get(1) * third;
-
+        return IntStream.range(0, entries.size() - 1).filter(i -> entries.get(i + 1) > entries.get(i)).count();
     }
 
-    return desiredProduct;
-  }
+    private static long countSummedUpIncreasedValues(List<Integer> entries) {
+
+        List<Integer> sums = new ArrayList<>();
+        IntStream.range(0, entries.size() - 2).forEach(i -> {
+            sums.add(entries.get(i) + entries.get(i + 1) + entries.get(i + 2));
+
+        });
+        return countIncreasedValues(sums);
+    }
+
+
 }

@@ -3,119 +3,155 @@ package Days;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Array;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
- * Counts valid passports
+ * --- Day 4: Giant Squid ---
  */
 public class Day4 {
 
-  private static final List<String> requiredFields = Arrays.asList("ecl", "eyr", "hcl", "pid", "iyr",  "byr", "hgt");
+    public static void main(String[] args) throws IOException {
 
-  private static final Predicate<String> BYR_PATTERN = Pattern.compile("(^19[2-9][0-9]$)|(^200[0-2]$)").asMatchPredicate();
-  private static final Predicate<String>IYR_PATTERN = Pattern.compile("^201[0-9]$|^2020$").asMatchPredicate();
-  private static final Predicate<String>EYR_PATTERN = Pattern.compile("^202[0-9]$|^2030$").asMatchPredicate();
-  private static final Predicate<String>HGT_PATTERN = Pattern.compile("^1([5-8][0-9]|9[0-3])cm$|^(59|6[0-9]|7[0-6])in$").asMatchPredicate();
-  private static final Predicate<String>HCL_PATTERN = Pattern.compile("^#([0-9]|[a-f]){6}$").asMatchPredicate();
-  private static final Predicate<String>ECL_PATTERN = Pattern.compile("^amb$|^blu$|^brn$|^gry$|^grn$|^hzl$|^oth$").asMatchPredicate();
-  private static final Predicate<String> PID_PATTERN = Pattern.compile("^\\d{9}$").asMatchPredicate();
-
-  private static final Map<String, Predicate<String>> requiredFieldsWithValidation = new HashMap<>() {{
-    put("byr", BYR_PATTERN);
-    put("iyr", IYR_PATTERN);
-    put("eyr", EYR_PATTERN);
-    put("hgt", HGT_PATTERN);
-    put("hcl", HCL_PATTERN);
-    put("ecl", ECL_PATTERN);
-    put("pid", PID_PATTERN);
-  }};
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day4.txt"))) {
 
 
-  public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day4.txt"));
-    List<String> collect = bufferedReader.lines().collect(Collectors.toList());
-    List<String> concatenated =  parsePassports(collect);
-
-    List<Passport> entries = concatenated.stream().map(Passport::new).collect(Collectors.toList());
-//    BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Day4 - concatenated.txt"));
-//    for (String s : concatenated) {
-//      bufferedWriter.append(s);
-//      bufferedWriter.newLine();
-//    }
-//  bufferedWriter.close();
-    bufferedReader.close();
-
-
-    System.out.println("The number of valid passports is: "+ countValidPassports_StepOne(entries));
-    System.out.println("The number of valid REALLY passports is: "+ countValidPassports_StepTwo(entries));
-  }
-
-
-
-  private static long countValidPassports_StepOne(List<Passport> passports){
-
-    return passports.stream().filter(Day4::isValid_StepOne).count();
-  }
-
-
-  private static boolean isValid_StepOne(Passport passport) {
-
-    return requiredFields.stream().allMatch(passport.content::containsKey);
-
-  }
-  private static long countValidPassports_StepTwo(List<Passport> passports){
-
-    return passports.stream().filter(Day4::isValid_StepTwo).count();
-  }
-
-
-  private static boolean isValid_StepTwo(Passport passport) {
-
-    Map<String, String> passContent = passport.content;
-    return requiredFieldsWithValidation.entrySet().stream().allMatch(
-        (fieldAndValidation) -> passContent.containsKey(fieldAndValidation.getKey()) && fieldAndValidation.getValue().test(passContent.get(fieldAndValidation.getKey())));
-  }
-
-  private static List<String> parsePassports(List<String> collect) {
-    List<String> concatenated = new ArrayList<>();
-
-    StringBuilder sb = new StringBuilder();
-    for (String s : collect) {
-      if (!s.isEmpty()) {
-        sb.append(s);
-        sb.append(" ");
-      }else{
-        concatenated.add(sb.toString());
-        sb = new StringBuilder();
-      }
+            List<List<Integer>> entries = bufferedReader.lines().filter(Predicate.not(String::isBlank))
+                    .<List<Integer>>mapMulti((line, consumer) -> {
+                        List<Integer> list = new ArrayList<>();
+                        final var s = line.split(" ");
+                        for (String s1 : s) {
+                            if (!s1.isBlank()) {
+                                list.add(Integer.parseInt(s1));
+                            }
+                        }
+                        if (list.size() != 5) throw new IllegalStateException("Wrong size!");
+                        consumer.accept(list);
+                    })
+                    .collect(toList());
+            List<Integer> numbers = new ArrayList<>(Arrays.asList(10, 80, 6, 69, 22, 99, 63, 92, 30, 67, 28, 93, 0, 50, 65, 87, 38, 7, 91, 60, 57, 40, 84, 51, 27, 12, 44, 88, 64, 35, 39, 74, 61, 55, 31, 48, 81, 89, 62, 37, 94, 43, 29, 14, 95, 8, 78, 49, 90, 97, 66, 70, 25, 68, 75, 45, 42, 23, 9, 96, 56, 72, 59, 32, 85, 3, 71, 79, 18, 24, 33, 19, 15, 20, 82, 26, 21, 13, 4, 98, 83, 34, 86, 5, 2, 73, 17, 54, 1, 77, 52, 58, 76, 36, 16, 46, 41, 47, 11, 53));
+//            findFirstSolution(entries, numbers);
+            findSecondSolution(entries, numbers);
+        }
 
     }
-    concatenated.add(sb.toString());
-    return concatenated;
-  }
+
+    private static void findFirstSolution(List<List<Integer>> entries, List<Integer> numbers) {
+        final var boards = prepareData(entries);
+        final int[] winningNumber = new int[1];
+        final List<List<List<Integer>>> winningBoard = new ArrayList<>();
+        try {
+
+            numbers.forEach(guess -> {
+
+                for (Map<List<List<Integer>>, AtomicInteger> board : boards) {
+                    board.keySet().stream().forEach(entry -> {
+
+                        entry.forEach(row -> {
+
+                            row.remove(guess);
+                            if (row.size() == 0) {
+                                winningNumber[0] = guess;
+                                winningBoard.add(board.keySet().stream().findFirst().get());
+                                throw new IllegalStateException();
+                            }
+                        });
+                    });
+                }
+            });
+        } catch (Exception e) {
+            System.out.println("Exception driven development");
+        }
 
 
+        var sum = 0;
+        int counter = 0;
+        for (List<Integer> list : winningBoard.get(0)) {
+            sum += list.stream().reduce(Integer::sum).orElse(0);
+            if (++counter == 5) break;
+        }
 
-private static class Passport{
-    private final Map<String, String > content;
+        System.out.println("The product you are looking for is: " + sum * winningNumber[0]); //39984
+    }
 
-  public Passport(String line) {
+    private static void findSecondSolution(List<List<Integer>> entries, List<Integer> numbers) {
+        final var boards = prepareData(entries);
 
-    String[] s = line.split(" ");
-    this.content =Arrays.stream(s).map(element -> element.split(":")).collect(Collectors.toMap(pair -> pair[0],
-        pair -> pair[1]));
-  }
-
-}
+        HashMap<Integer, Integer> winningPair = new LinkedHashMap<>();
+        HashMap<Set<List<List<Integer>>>, Integer> winningPair2 = new LinkedHashMap<>();
+        AtomicInteger winsCounter = new AtomicInteger(0);
 
 
+        for (Integer guess : numbers) {
+            for (Map<List<List<Integer>>, AtomicInteger> board : boards) {
+                board.keySet().forEach(entry -> {
+                    if (board.values().stream().anyMatch(v -> v.intValue() > 0)) {
+                        return;
+                    }
+                    for (List<Integer> row : entry) {
+                        row.remove(guess);
+                        if (row.size() == 0) {
+                            board.values().forEach(v -> v.set(winsCounter.incrementAndGet()));
+                            winningPair.put(winsCounter.intValue(), guess);
+                            winningPair2.put(board.keySet(), guess);
+                            break;
+                        }
+                    }
+                });
+            }
+        }
 
+        final var lastGuess = winningPair.get(winningPair.size());
+        final var orderedBoards = winningPair2.keySet().stream().flatMap(Collection::stream).toList();
+        final var lastBoard = orderedBoards.get(orderedBoards.size()-1);
+
+        var sum = 0;
+        int counter = 0;
+        for (List<Integer> list : lastBoard) {
+            sum += list.stream().reduce(Integer::sum).orElse(0);
+            if (++counter == 5) break;
+        }
+
+
+        System.out.println("The product you are looking for is: " + sum *lastGuess); //8468
+    }
+
+
+    private static List<Map<List<List<Integer>>, AtomicInteger>> prepareData(List<List<Integer>> rows) {
+
+        List<Map<List<List<Integer>>, AtomicInteger>> aggBoards = new ArrayList<>();
+        for (int j = 0; j < rows.size(); j += 5) {
+
+
+            List<List<Integer>> board = new ArrayList<>();
+            List<Integer> vertical1 = new ArrayList<>();
+            List<Integer> vertical2 = new ArrayList<>();
+            List<Integer> vertical3 = new ArrayList<>();
+            List<Integer> vertical4 = new ArrayList<>();
+            List<Integer> vertical5 = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+                board.add(rows.get(j + i));
+                vertical1.add(rows.get(j + i).get(0));
+                vertical2.add(rows.get(j + i).get(1));
+                vertical3.add(rows.get(j + i).get(2));
+                vertical4.add(rows.get(j + i).get(3));
+                vertical5.add(rows.get(j + i).get(4));
+            }
+            board.add(vertical1);
+            board.add(vertical2);
+            board.add(vertical3);
+            board.add(vertical4);
+            board.add(vertical5);
+
+
+            aggBoards.add(Collections.singletonMap(board, new AtomicInteger(0)));
+        }
+
+        return aggBoards;
+    }
 
 }

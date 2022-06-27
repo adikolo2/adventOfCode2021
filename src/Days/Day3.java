@@ -3,114 +3,109 @@ package Days;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-// #### Part One movements ####
-//   right 3, down 1
+import static java.util.stream.Collectors.toList;
 
-// #### Part Two movements ####
-//    Right 1, down 1.
-//    Right 3, down 1. (This is the slope you already checked.)
-//    Right 5, down 1.
-//    Right 7, down 1.
-//    Right 1, down 2.
-
+/**
+ * --- Day 3: Binary Diagnostic ---
+ */
 public class Day3 {
 
-  private static final AtomicInteger stepCounter = new AtomicInteger(0);
+    public static void main(String[] args) throws IOException {
 
-  public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day3.txt"));
-
-    List<TreeLine> entries = bufferedReader.lines().map(TreeLine::new).collect(Collectors.toList());
-    List<Movement> movements = new LinkedList<>();
-    movements.add(new Movement(1, 1));
-    movements.add(new Movement(3, 1));
-    movements.add(new Movement(5, 1));
-    movements.add(new Movement(7, 1));
-    movements.add(new Movement(1, 2));
-
-//    System.out.println("The number of hit trees is: "+ countTreesOnTheWay(entries));
-    System.out.println("The number of the multiplied hit trees is: "+ countTreesOnTheWay(movements, entries));
-
-    bufferedReader.close();
-  }
-
-  private static long countTreesOnTheWay(List<Movement> movements, List<TreeLine> treeLines) {
-    long multiplication = 1;
-    for (final Movement move : movements) {
-      stepCounter.set(0);
-      long sum = IntStream.range(0, treeLines.size())
-              .filter(index -> (index % move.down) == 0)
-              .filter(index2 -> hitATree(treeLines.get(index2), move.right)).count();
-
-      if (sum != 0) {
-        multiplication *= sum;
-      }
-    }
-
-    return multiplication;
-  }
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day3.txt"))) {
 
 
-  private static boolean hitATree(TreeLine treeLine, int step) {
+            List<String> entries = bufferedReader.lines().collect(toList());
 
-    int currentPosition = stepCounter.getAndAdd(step);
-    return treeLine.treePositions.contains(calculatePositionWithinRange(treeLine, currentPosition));
-  }
-
-  private static long countTreesOnTheWay( List<TreeLine> treeLines) {
-
-    return treeLines.stream().filter(treeLine -> hitATree(treeLine, 3)).count();
-  }
-
-  private static int calculatePositionWithinRange(TreeLine treeLine, int currentPosition) {
-
-    if (currentPosition < treeLine.length) {
-      return currentPosition;
-    }
-      int subtracted = currentPosition - treeLine.length;
-    return subtracted < treeLine.length ? subtracted : calculatePositionWithinRange(treeLine, subtracted);
-  }
-
-  private static class TreeLine {
-  private final List<Integer> openSquarePositions;
-  private final List<Integer> treePositions;
-  private final int length;
-
-    public TreeLine(String line) {
-
-      this.openSquarePositions = new LinkedList<>();
-      this.treePositions = new LinkedList<>();
-      this.length = line.length();
-
-      IntStream.range(0,line.length()).forEach(index->{
-        if (line.charAt(index) == '.') {
-          this.openSquarePositions.add(index);
-        }else {
-          this.treePositions.add(index);
+//            System.out.println("The value you are looking for is: " + calculatePowerConsumption(entries)); //
+            System.out.println("The product you are looking for is: " + calculateLifeSupport(entries)); // 4432698
         }
-      });
-    }
-  }
 
-    private static class Movement {
-      final int  right;
-      final int down;
-
-      public Movement(int right, int down) {
-
-        this.right = right;
-        this.down = down;
-      }
     }
 
 
+    private static long calculatePowerConsumption(List<String> binaries) {
 
+        List<AtomicInteger> gammaRate = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            gammaRate.add(new AtomicInteger(0));
+        }
+        IntStream.range(0, 12).forEach(i ->
+                binaries.forEach(binary ->
+                        gammaRate.get(i).addAndGet((Integer.parseInt(binary.substring(i, i + 1))))));
 
+        var gamma = new StringBuilder();
+        var epsilon = new StringBuilder();
+        gammaRate.forEach(sum -> {
+            gamma.append(sum.intValue() >= 500 ? 1 : 0);
+            epsilon.append(sum.intValue() >= 500 ? 0 : 1);
+        });
+
+        return (long) Integer.parseInt(gamma.toString(), 2) * Integer.parseInt(epsilon.toString(), 2);
+    }
+
+    private static long calculateLifeSupport(List<String> binaries) {
+
+        List<AtomicInteger> gammaRate = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            gammaRate.add(new AtomicInteger(0));
+        }
+        IntStream.range(0, 12).forEach(i ->
+                binaries.forEach(binary ->
+                        gammaRate.get(i).addAndGet((Integer.parseInt(binary.substring(i, i + 1))))));
+
+        final var bitCriteria = gammaRate.stream()
+                .map(atomicInteger -> atomicInteger.intValue() >= 500 ? "1" : "0")
+                .collect(toList());
+
+        final var oxygen = findOxygenGeneratorRating(binaries, bitCriteria.get(0), 0);
+        final var co2Scrubber = findC02ScrubberRating(binaries, bitCriteria.get(0).equals("1") ? "0" : "1", 0);
+        return (long) Integer.parseInt(oxygen.get(0).toString(), 2) * Integer.parseInt(co2Scrubber.get(0).toString(), 2);
+    }
+
+    private static String calculateBitCriteriaOxygen(List<String> binaries, int position) {
+        if (binaries.size() < 2) {
+            return "";
+        }
+        final AtomicInteger frequencyOfTheBit = new AtomicInteger(0);
+        binaries.forEach(binary -> frequencyOfTheBit.addAndGet(Integer.parseInt(binary.substring(position, position + 1))));
+        return frequencyOfTheBit.intValue() * 2 >= binaries.size() ? "1" : "0";
+    }
+
+    private static String calculateBitCriteriaCo2Scrubber(List<String> binaries, int position) {
+        if (binaries.size() < 2) {
+            return "";
+        }
+        final AtomicInteger frequencyOfTheBit = new AtomicInteger(0);
+        binaries.forEach(binary -> frequencyOfTheBit.addAndGet(Integer.parseInt(binary.substring(position, position + 1))));
+        return frequencyOfTheBit.intValue() * 2 >= binaries.size() ? "0" : "1";
+    }
+
+    private static List<String> findOxygenGeneratorRating(List<String> binaries, String bitCriteria, int positionCounter) {
+        if (binaries.size() == 1) {
+            return binaries;
+        }
+        final var positionIncremented = positionCounter + 1;
+        final var filteredBinaries = binaries.stream()
+                .filter(binary -> bitCriteria.equals(binary.substring(positionCounter, positionIncremented)))
+                .collect(toList());
+        return findOxygenGeneratorRating(filteredBinaries, calculateBitCriteriaOxygen(filteredBinaries, positionIncremented), positionIncremented);
+    }
+
+    private static List<String> findC02ScrubberRating(List<String> binaries, String bitCriteria, int positionCounter) {
+        if (binaries.size() == 1) {
+            return binaries;
+        }
+        final var positionIncremented = positionCounter + 1;
+        final var filteredBinaries = binaries.stream()
+                .filter(binary -> bitCriteria.equals(binary.substring(positionCounter, positionIncremented)))
+                .collect(toList());
+        return findC02ScrubberRating(filteredBinaries, calculateBitCriteriaCo2Scrubber(filteredBinaries, positionIncremented), positionIncremented);
+    }
 
 }

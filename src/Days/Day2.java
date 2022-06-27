@@ -1,83 +1,93 @@
 package Days;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.stream.Collectors.toList;
+
+/**
+ * Part 1:
+ * Calculate the horizontal position and depth you would have after following the planned course.
+ * What do you get if you multiply your final horizontal position by your final depth?
+ * <p>
+ * Part 2:
+ * Using this new interpretation of the commands, calculate the horizontal position and depth you would have after following the planned course.
+ */
 public class Day2 {
 
-  public static void main(String[] args) throws IOException {
-    BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day2.txt"));
+    public static void main(String[] args) throws IOException {
 
-    List<PolicySet> entries = bufferedReader.lines().map(PolicySet::new).collect(toList());
-
-    System.out.println("The number of valid password is: "+ countValidPasswords(entries));
-    bufferedReader.close();
-  }
-
-  private static long countValidPasswords(List<PolicySet> policySet) {
-
-    return policySet.stream().filter(Day2::isPasswordValidNew).count();
-  }
-
-  private static boolean isPasswordValidNew(PolicySet policySet) {
-
-    int firstOccurrence = policySet.getRange()[0];
-    int secondOccurrence = policySet.getRange()[1];
-    String password = policySet.getPassword();
-    return password.charAt(firstOccurrence - 1) == policySet.getLetter().charAt(0) ^ password.charAt(secondOccurrence - 1) == policySet.getLetter().charAt(0);
-  }
-  private static boolean isPasswordValidOld(PolicySet policySet) {
-
-    int lower = policySet.getRange()[0];
-    int higher = policySet.getRange()[1];
-    String password = policySet.getPassword();
-    long count = password.chars().filter(c -> c == policySet.getLetter().charAt(0)).count();
-    return count>=lower && count<=higher;
-  }
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("src/resources/Day2.txt"))) {
 
 
+            List<Command> entries = bufferedReader.lines().map(Day2::parseCommand).collect(toList());
 
-  private static class PolicySet{
-    private  int[] range = new int[2];
-    private final String letter;
-    private String password;
-
-    public PolicySet(String line) {
-      String[] lineSplit = line.split(" ");
-      this.range[0] = Integer.parseInt(lineSplit[0].split("-")[0]);
-      this.range[1] = Integer.parseInt(lineSplit[0].split("-")[1]);
-
-      this.letter = lineSplit[1].substring(0, 1);
-      this.password = lineSplit[2];
+//            System.out.println("The value you are looking for is: " + calculatePosition(entries)); // 1660158
+            System.out.println("The product you are looking for is: " + calculatePositionPartTwo(entries)); //
+        }
 
     }
 
-    /**
-     * @return range
-     */
-    public int[] getRange() {
+    private static long calculatePosition(List<Command> entries) {
 
-      return this.range;
+        AtomicInteger depth = new AtomicInteger();
+        AtomicInteger horizontal = new AtomicInteger();
+
+        entries.forEach(entry -> {
+
+            switch (entry.direction) {
+                case UP -> depth.addAndGet(-entry.value);
+                case DOWN -> depth.addAndGet(entry.value);
+                case FORWARD -> horizontal.addAndGet(entry.value);
+            }
+
+        });
+        return (long) depth.intValue() * horizontal.intValue();
     }
 
-    /**
-     * @return letter
-     */
-    public String getLetter() {
+    private static long calculatePositionPartTwo(List<Command> commands) {
 
-      return this.letter;
+        AtomicInteger depth = new AtomicInteger();
+        AtomicInteger horizontal = new AtomicInteger();
+        AtomicInteger aim = new AtomicInteger();
+
+        commands.forEach(command -> {
+
+            switch (command.direction) {
+                case UP -> aim.addAndGet(-command.value);
+                case DOWN -> aim.addAndGet(command.value);
+                case FORWARD -> {
+                    horizontal.addAndGet(command.value);
+                    depth.addAndGet(aim.get() * command.value);
+                }
+            }
+
+        });
+        return (long) depth.intValue() * horizontal.intValue();
     }
 
-    /**
-     * @return password
-     */
-    public String getPassword() {
 
-      return this.password;
+    private static Command parseCommand(String entry) {
+        String[] s = entry.split(" ");
+        return new Command(Direction.valueOf(s[0].toUpperCase(Locale.ROOT)), Integer.parseInt(s[1]));
     }
-  }
+
+    private static class Command {
+        private final Direction direction;
+        private final int value;
+
+        public Command(Direction direction, int value) {
+            this.direction = direction;
+            this.value = value;
+        }
+    }
+
+    private enum Direction {
+        FORWARD, DOWN, UP
+    }
+
 }
